@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic-Tac-Toe with vanilla JS</title>
+    <link rel="stylesheet" href="output.css" />
+  </head>
+  <body>
+    <main class="relative">
+      <div
+        class="grid place-items-center absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1/2"
+      >
+        <h1 class="font-semibold text-2xl">Tic-Tac-Toe Game</h1>
+        <h2 class="game-stauts text-3xl my-5">
+          Game Status: <span class="game-status-msg">New Game</span>
+        </h2>
+        <div class="grid grid-cols-3 grid-rows-3 w-96" id="game-container">
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+          <button
+            class="p-5 border bg-gray-300 flex justify-center h-20 items-center text-2xl font-bold btn-tic-tac-toe"
+            id="player"
+          ></button>
+        </div>
+        <button
+          class="reset-btn px-8 py-3 border-none bg-green-600 text-white font-semibold my-5 hover:bg-green-500"
+        >
+          Reset Game
+        </button>
+      </div>
+    </main>
+
+    <script>
+      /**
+       * Game flow -- The game continues until either a player wins or all cells are filled (draw)
+       * Steps in the game
+       * 1. Display the board: Render the board to the screen after every move
+       * 2. Player's move: Allow the current player to select an empty cell (via click)
+       * 3. Update the board: Place the player's marker (X or O) in the chosen cell if it's empty
+       * 5. Click for Win or Draw: After each move check if the current player is win or the board is full
+       * 6. Switch players: If no win/draw, switch turn to the other player
+       * 7. End the game: if a players wins or there is a game, declare the result
+       * 8. Reset the game
+       * */
+
+      const players = document.querySelectorAll("#player");
+      const resetBtn = document.querySelector(".reset-btn");
+      const gameStatusMsg = document.querySelector(".game-status-msg");
+      const buttons = document.querySelectorAll(".btn-tic-tac-toe");
+      const soundMove = new Audio("./sounds/move.wav");
+      const soundWin = new Audio("./sounds/win.wav");
+      const soundDraw = new Audio("./sounds/draw.wav");
+      const soundReset = new Audio("./sounds/reset.wav");
+
+      // audio volume
+      const soundVolume = 0.2;
+      soundMove.volume = soundVolume;
+      soundDraw.volume = soundVolume;
+      soundWin.volume = soundVolume;
+      soundReset.volume = soundVolume;
+
+      // Each cell is empty at the start
+      let board = ["", "", "", "", "", "", "", "", ""];
+      // Track players
+      let currentPlayer = "X"; // X starts first
+
+      // Winning Combinations
+      const winCombinations = [
+        [0, 1, 2], // row 1
+        [3, 4, 5], // row 2
+        [6, 7, 8], // row 3
+        [0, 3, 6], // column 1
+        [1, 4, 7], // column 2
+        [2, 5, 8], // column 3
+        [2, 4, 6], // corner left
+        [0, 4, 8], // Corner right
+      ];
+
+      // Initialize the board's player move with empty string
+      function initGame() {
+        buttons.forEach((button) => button.removeAttribute("disabled"));
+        players.forEach((player, i) => {
+          player.innerText = board[i];
+        });
+        gameStatusMsg.style.color = "black";
+      }
+      initGame();
+
+      const makeMove = function (player, i) {
+        if (board[i] === "") {
+          // Display current player upon click
+          player.textContent = currentPlayer;
+          // Store the current player value to the board index
+          board[i] = currentPlayer;
+          console.log(board);
+
+          if (checkWin()) {
+            soundWin.play();
+            gameStatusMsg.style.color = "green";
+            gameStatusMsg.textContent = `${currentPlayer} won!`;
+
+            buttons.forEach((button) => button.setAttribute("disabled", true));
+          } else if (checkDraw()) {
+            soundDraw.play();
+            gameStatusMsg.textContent = "Match is draw";
+            gameStatusMsg.style.color = "orange";
+          } else {
+            // Switch the current player each time
+            switchPlayer();
+          }
+        }
+      };
+      // 1. Display every move
+      players.forEach((player, i) => {
+        player.addEventListener("click", function () {
+          // play sound
+          soundMove.play();
+          // Make move function
+          makeMove(player, i);
+        });
+      });
+
+      function checkWin() {
+        return winCombinations.some((combination) =>
+          combination.every((i) => board[i] === currentPlayer)
+        );
+      }
+      function switchPlayer() {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      }
+
+      function checkDraw() {
+        return board.every((cell) => cell !== "");
+      }
+
+      function resetGame() {
+        soundReset.play();
+
+        board = ["", "", "", "", "", "", "", "", ""];
+        currentPlayer = "X";
+
+        gameStatusMsg.textContent = "New Game";
+        initGame();
+      }
+
+      resetBtn.addEventListener("click", resetGame);
+    </script>
+
+    <script src="main.js"></script>
+  </body>
+</html>
